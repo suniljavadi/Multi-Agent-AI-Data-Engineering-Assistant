@@ -1,5 +1,7 @@
 # Multi-Agent Data Engineering Copilot
 
+**Status: Completed portfolio implementation with synthetic data and mock integrations**
+
 ## Overview
 This project is a portfolio-grade synthetic environment for a multi-agent AI assistant built for data engineers. It helps with SQL questions, ETL and incident investigation, engineering documentation, historical incidents, data analysis, and SQL optimization. The goal is to demonstrate practical agent orchestration without over-engineering the system.
 
