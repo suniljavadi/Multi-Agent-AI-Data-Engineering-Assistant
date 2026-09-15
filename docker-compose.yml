@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      MOCK_MODE: "true"
+      PYTHONPATH: "."
+    volumes:
+      - .:/app
+
+  streamlit:
+    build: .
+    command: streamlit run streamlit_app/app.py --server.address 0.0.0.0 --server.port 8501
+    ports:
+      - "8501:8501"
+    environment:
+      MOCK_MODE: "true"
+      PYTHONPATH: "."
+    volumes:
+      - .:/app
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agentdb
+    ports:
+      - "5432:5432"

@@ -1,0 +1,12 @@
+[
+  {"log_id": 1, "job_name": "Customer_Load", "execution_ts": "2024-05-01T01:00:00", "log_level": "ERROR", "message": "SQL timeout while reading customer_master"},
+  {"log_id": 2, "job_name": "Customer_Load", "execution_ts": "2024-05-01T01:00:00", "log_level": "WARN", "message": "Execution duration increased from 8 minutes to 42 minutes"},
+  {"log_id": 3, "job_name": "Customer_Load", "execution_ts": "2024-05-01T01:00:30", "log_level": "INFO", "message": "Started customer dimension refresh"},
+  {"log_id": 4, "job_name": "Product_Load", "execution_ts": "2024-05-01T02:00:00", "log_level": "ERROR", "message": "Landing zone file product.csv not found"},
+  {"log_id": 5, "job_name": "Sales_Aggregation", "execution_ts": "2024-05-03T05:00:00", "log_level": "ERROR", "message": "Null values in total_sales column"},
+  {"log_id": 6, "job_name": "Order_Load", "execution_ts": "2024-05-04T09:00:00", "log_level": "ERROR", "message": "Deadlock detected on order staging table"},
+  {"log_id": 7, "job_name": "Daily_Report", "execution_ts": "2024-05-05T06:00:00", "log_level": "ERROR", "message": "Power BI API returned 503"},
+  {"log_id": 8, "job_name": "Customer_Load", "execution_ts": "2024-05-06T01:00:00", "log_level": "ERROR", "message": "Source database connection failed after failover"},
+  {"log_id": 9, "job_name": "Product_Load", "execution_ts": "2024-05-07T02:00:00", "log_level": "ERROR", "message": "API authentication failed due to expired token"},
+  {"log_id": 10, "job_name": "Sales_Aggregation", "execution_ts": "2024-05-08T05:00:00", "log_level": "WARN", "message": "Duplicate customer keys detected in staging"}
+]

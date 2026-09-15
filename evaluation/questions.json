@@ -1,0 +1,8 @@
+[
+  {"scenario": "SQL", "question": "Show the top 10 customers by revenue.", "expected_intent": "SQL_QUERY"},
+  {"scenario": "Knowledge", "question": "What is the rollback procedure?", "expected_intent": "KNOWLEDGE_SEARCH"},
+  {"scenario": "ETL", "question": "Why did Customer_Load fail?", "expected_intent": "ETL_INVESTIGATION"},
+  {"scenario": "Complex", "question": "Investigate why Customer_Load failed and check whether our documentation has a recommended solution.", "expected_intent": "COMPLEX_INVESTIGATION"},
+  {"scenario": "Optimization", "question": "Optimize this query: SELECT * FROM customers ORDER BY revenue DESC;", "expected_intent": "SQL_OPTIMIZATION"},
+  {"scenario": "Ticket", "question": "Create a ticket for this confirmed incident.", "expected_intent": "TICKET_REQUEST"}
+]
