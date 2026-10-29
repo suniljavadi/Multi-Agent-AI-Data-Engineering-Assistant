@@ -83,6 +83,13 @@ streamlit run streamlit_app/app.py
 docker compose up --build
 ```
 
+The API and Streamlit services in Compose are configured for local development. The optional
+PostgreSQL service is not used by the mock application; start it only when needed with the
+`postgres` profile and provide `POSTGRES_PASSWORD` through the process environment. Do not
+commit passwords to Compose files. Configure browser access to the API with `CORS_ORIGINS`
+as a JSON array of trusted origins (for example, `["https://your-ui.example"]`); no origins
+are allowed by default.
+
 ## Examples
 - Show me customers with revenue above 100000.
 - Why did the Customer_Load job fail yesterday?
@@ -93,6 +100,9 @@ docker compose up --build
 
 ## Limitations
 This is a synthetic portfolio implementation. It does not connect to real enterprise systems or production monitoring. It intentionally avoids real credentialed integrations.
+Before public deployment, add authentication and authorization, configure trusted CORS origins,
+use managed secret storage, and replace the mock database and ticket service. Compose's reload
+and source bind mounts are development conveniences, not a production deployment configuration.
 
 ## Future Improvements
 Possible extensions include real Jira, Confluence, SQL Server, cloud deployment, enterprise monitoring, MCP, authentication, and advanced agent orchestration.

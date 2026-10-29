@@ -70,6 +70,30 @@ class ToolCallRecord(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class QuestionRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+
+    @field_validator("question")
+    @classmethod
+    def validate_question(cls, value: str) -> str:
+        question = value.strip()
+        if not question:
+            raise ValueError("Question is required.")
+        return question
+
+
+class SQLQueryRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=10000)
+
+    @field_validator("query")
+    @classmethod
+    def validate_query(cls, value: str) -> str:
+        query = value.strip()
+        if not query:
+            raise ValueError("Query is required.")
+        return query
+
+
 class ApprovalRequest(BaseModel):
     ticket_title: str
     ticket_description: str

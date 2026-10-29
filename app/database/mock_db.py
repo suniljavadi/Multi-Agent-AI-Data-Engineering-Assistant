@@ -2,16 +2,27 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import time
 from pathlib import Path
 from typing import Any
 
-from app.config.settings import DATA_DIR, get_settings
+from app.config.settings import get_settings
 
 
 class MockDatabase:
-    def __init__(self, db_path: str | None = None) -> None:
+    def __init__(
+        self,
+        db_path: str | None = None,
+        max_rows: int | None = None,
+        timeout_seconds: int | None = None,
+    ) -> None:
         settings = get_settings()
-        self.db_path = Path(db_path or settings.database_url.replace("sqlite:///./", "./"))
+        database_url = settings.database_url.get_secret_value()
+        self.max_rows = max_rows if max_rows is not None else settings.max_sql_rows
+        self.timeout_seconds = (
+            timeout_seconds if timeout_seconds is not None else settings.timeout_seconds
+        )
+        self.db_path = Path(db_path or database_url.replace("sqlite:///./", "./"))
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(str(self.db_path))
         self.conn.row_factory = sqlite3.Row
@@ -58,9 +69,18 @@ class MockDatabase:
         upper = query.upper()
         if any(token in upper for token in blocked):
             raise ValueError("Read-only query rejected: prohibited SQL statement detected.")
-        cursor = self.conn.execute(query, params)
-        rows = cursor.fetchall()
-        return [dict(row) for row in rows]
+        deadline = time.monotonic() + self.timeout_seconds
+        self.conn.set_progress_handler(lambda: int(time.monotonic() >= deadline), 1000)
+        try:
+            cursor = self.conn.execute(query, params)
+            rows = cursor.fetchmany(self.max_rows + 1)
+            return [dict(row) for row in rows[: self.max_rows]]
+        except sqlite3.OperationalError as exc:
+            if "interrupted" in str(exc).lower():
+                raise TimeoutError("SQL query exceeded the configured execution timeout.") from exc
+            raise
+        finally:
+            self.conn.set_progress_handler(None, 0)
 
     def get_schema(self) -> dict[str, list[str]]:
         schema: dict[str, list[str]] = {}

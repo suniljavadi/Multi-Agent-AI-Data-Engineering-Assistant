@@ -6,16 +6,22 @@ from typing import Any
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.agents.orchestrator import OrchestratorAgent
-from app.models.agent_models import AgentResult, ApprovalRequest, ApiResponse, InvestigationState
+from app.config.settings import get_settings
+from app.models.agent_models import (
+    ApiResponse,
+    ApprovalRequest,
+    QuestionRequest,
+    SQLQueryRequest,
+)
 from app.tools.jira_tools import MockJiraService
 from app.tools.sql_tools import SQLValidationTool
 from app.workflows.investigation_workflow import InvestigationWorkflow
 
-app = FastAPI(title="Multi-Agent Data Engineering Copilot")
+settings = get_settings()
+app = FastAPI(title=settings.app_name)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -31,50 +37,36 @@ def health() -> dict[str, str]:
 
 
 @app.post("/api/v1/chat")
-def chat(payload: dict[str, Any]) -> ApiResponse:
-    question = payload.get("question")
-    if not question:
-        raise HTTPException(status_code=400, detail="Question is required")
+def chat(payload: QuestionRequest) -> ApiResponse:
     req_id = str(uuid.uuid4())
-    result = workflow.run(question)
+    result = workflow.run(payload.question)
     return ApiResponse(request_id=req_id, status="ok", result={"state": result["state"].model_dump(), "results": [item.model_dump() for item in result["results"]]})
 
 
 @app.post("/api/v1/investigate")
-def investigate(payload: dict[str, Any]) -> ApiResponse:
-    question = payload.get("question")
-    if not question:
-        raise HTTPException(status_code=400, detail="Question is required")
+def investigate(payload: QuestionRequest) -> ApiResponse:
     req_id = str(uuid.uuid4())
-    result = workflow.run(question)
+    result = workflow.run(payload.question)
     return ApiResponse(request_id=req_id, status="ok", result={"state": result["state"].model_dump(), "results": [item.model_dump() for item in result["results"]]})
 
 
 @app.post("/api/v1/approve")
-def approve(payload: dict[str, Any]) -> dict[str, Any]:
-    approval = ApprovalRequest(
-        ticket_title=payload.get("ticket_title", ""),
-        ticket_description=payload.get("ticket_description", ""),
-        priority=payload.get("priority", "MEDIUM"),
-    )
-    ticket = mock_jira.create_ticket(approval)
+def approve(payload: ApprovalRequest) -> dict[str, Any]:
+    ticket = mock_jira.create_ticket(payload)
     return {"status": "approved", "ticket": ticket}
 
 
 @app.post("/api/v1/sql/validate")
-def validate_sql(payload: dict[str, Any]) -> dict[str, Any]:
-    query = payload.get("query")
-    if not query:
-        raise HTTPException(status_code=400, detail="Query is required")
-    return validator.validate(query)
+def validate_sql(payload: SQLQueryRequest) -> dict[str, Any]:
+    return validator.validate(payload.query)
 
 
 @app.post("/api/v1/sql/execute")
-def execute_sql(payload: dict[str, Any]) -> dict[str, Any]:
-    query = payload.get("query")
-    if not query:
-        raise HTTPException(status_code=400, detail="Query is required")
-    rows = validator.execute_read_only(query)
+def execute_sql(payload: SQLQueryRequest) -> dict[str, Any]:
+    try:
+        rows = validator.execute_read_only(payload.query)
+    except TimeoutError as exc:
+        raise HTTPException(status_code=504, detail=str(exc)) from exc
     return {"status": "ok", "rows": rows}
 
 

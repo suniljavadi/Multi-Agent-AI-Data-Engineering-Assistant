@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import time
 from typing import Any
 
 import sqlglot
@@ -46,7 +45,10 @@ class SQLValidationTool:
         validation = self.validate(query)
         if not validation["is_valid"]:
             raise ValueError("SQL rejected: " + "; ".join(validation["issues"]))
-        db = MockDatabase()
+        db = MockDatabase(
+            max_rows=self.settings.max_sql_rows,
+            timeout_seconds=self.settings.timeout_seconds,
+        )
         try:
             return db.execute_read_only(query)
         finally:
